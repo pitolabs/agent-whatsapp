@@ -1,0 +1,74 @@
+{
+	"name": "@pitolabs/agent-whatsapp",
+	"version": "0.1.0",
+	"description": "A WhatsApp number as a Mastra agent channel: Baileys linked device, pairing page, one turn per burst of messages, voice notes to text, WhatsApp-flavoured Markdown",
+	"type": "module",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/pitolabs/agent-whatsapp.git"
+	},
+	"homepage": "https://github.com/pitolabs/agent-whatsapp#readme",
+	"bugs": {
+		"url": "https://github.com/pitolabs/agent-whatsapp/issues"
+	},
+	"keywords": [
+		"mastra",
+		"whatsapp",
+		"baileys",
+		"chat-sdk",
+		"agent",
+		"channel",
+		"speech-to-text"
+	],
+	"packageManager": "bun@1.4.4",
+	"engines": {
+		"node": ">=22.13.0"
+	},
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"sideEffects": false,
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"scripts": {
+		"format": "sh scripts/biome.sh check --write .",
+		"format:check": "sh scripts/biome.sh ci .",
+		"typecheck": "tsc --noEmit",
+		"test": "bun test test/",
+		"build": "tsc -p tsconfig.build.json",
+		"prepublishOnly": "bun run format:check && bun run typecheck && bun test && bun run build",
+		"prepare": "git rev-parse --git-dir >/dev/null 2>&1 && git config core.hooksPath .githooks || true"
+	},
+	"dependencies": {
+		"pino": "10.4.0",
+		"qrcode": "1.5.4"
+	},
+	"peerDependencies": {
+		"@mastra/core": ">=1.79.0",
+		"@pitolabs/agent-docs": ">=0.1.4",
+		"baileys": ">=7.0.0-rc14",
+		"chat": ">=4.43.0",
+		"chat-adapter-baileys": ">=2.1.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.6.7",
+		"@chat-adapter/state-memory": "4.45.0",
+		"@mastra/core": "1.82.0",
+		"@pitolabs/agent-docs": "0.1.4",
+		"@types/bun": "1.4.4",
+		"@types/node": "22.20.5",
+		"@types/qrcode": "1.5.6",
+		"baileys": "7.0.0-rc14",
+		"chat": "4.45.0",
+		"chat-adapter-baileys": "2.1.0",
+		"hono": "4.13.18",
+		"typescript": "7.0.2"
+	}
+}
