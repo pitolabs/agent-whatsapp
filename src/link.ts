@@ -11,8 +11,52 @@ export interface LinkState {
 	since: string;
 }
 
+export interface LinkOptions {
+	/** Delay of the first status heartbeat after chatLogger() (default 60 s). */
+	firstHeartbeatMs?: number;
+	/** Interval of the status heartbeats after the first (default 600 s). */
+	heartbeatMs?: number;
+}
+
+/** How the last socket closed, after the last "Connected to WhatsApp" (heartbeat only; the link's own state is untouched). */
+export type Closed = "reconnecting" | "closed";
+
+/** The state word of the heartbeat: the status with `_` for `-`; a connected link whose socket closed is `reconnecting` or `closed`. */
+export const heartbeatState = (status: LinkState["status"], closed?: Closed): string => (status === "connected" && closed ? closed : status.replace(/-/g, "_"));
+
 export class Link {
 	state: LinkState = { status: "starting", since: new Date().toISOString() };
+	private heartbeat?: ReturnType<typeof setTimeout>;
+	private disposed = false;
+	/** Heartbeat only: set by every "Connection closed (...)" line, cleared by any set() (so by the next "Connected to WhatsApp"). */
+	private closed?: Closed;
+
+	constructor(private readonly options: LinkOptions = {}) {}
+
+	/**
+	 * The Chat SDK logger of this link, and the start of its status heartbeat: `[<line>:link] status: <state>` on the
+	 * console, once ~60 s later and then every 600 s. `line` is the root prefix the `[<line>:baileys]` lines carry. Log
+	 * monitoring may read the latest one as the line's state, so it never carries a number, JID or name.
+	 */
+	chatLogger(line = "chat"): Logger {
+		if (!this.heartbeat && !this.disposed) {
+			const beat = () => {
+				console.info(`[${line}:link] status: ${heartbeatState(this.state.status, this.closed)}`);
+				this.heartbeat = setTimeout(beat, this.options.heartbeatMs ?? 600_000);
+				this.heartbeat.unref();
+			};
+			this.heartbeat = setTimeout(beat, this.options.firstHeartbeatMs ?? 60_000);
+			this.heartbeat.unref();
+		}
+		return this.watchingLogger(line);
+	}
+
+	/** Stops the heartbeat for good. */
+	dispose(): void {
+		this.disposed = true;
+		clearTimeout(this.heartbeat);
+		this.heartbeat = undefined;
+	}
 	/**
 	 * A pairing by phone number instead of the QR: the number typed on the pairing page (digits, no +), then the code
 	 * WhatsApp gave for it. The adapter reads `phone` when it asks (its config's phoneNumber getter, whatsapp.ts).
@@ -28,6 +72,7 @@ export class Link {
 	beforeReconnect?: () => void;
 
 	set(status: LinkState["status"], qr?: string): void {
+		this.closed = undefined;
 		this.state = { status, qr, since: new Date().toISOString() };
 		if (status === "connected" || status === "logged-out") this.pairing = undefined;
 	}
@@ -51,6 +96,7 @@ export class Link {
 			info: (message, ...args) => {
 				if (message === "Connected to WhatsApp") this.set("connected");
 				// The adapter logs this, then opens the next socket in the same tick: the moment to fix the credentials.
+				if (/^Connection closed \(/.test(message)) this.closed = /reconnect=true\)$/.test(message) ? "reconnecting" : "closed";
 				if (/^Connection closed \(.*reconnect=true\)$/.test(message)) {
 					if (this.pairing) this.pairing = { phone: this.pairing.phone }; // its code died with the socket
 					this.beforeReconnect?.();

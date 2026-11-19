@@ -78,8 +78,8 @@ export const clerk = new Agent({
 		adapters: { whatsapp: { adapter: device.adapter, textFormat: "markdown", toolDisplay: "hidden" } },
 		handlers: { onDirectMessage: handler, onMention: handler, onSubscribedMessage: handler },
 		userName: "Clerk",
-		// The pairing page learns the link state from this logger.
-		chatOptions: { logger: device.link.watchingLogger("clerk-chat") },
+		// The pairing page learns the link state from this logger; it also logs a status heartbeat.
+		chatOptions: { logger: device.link.chatLogger("clerk-chat") },
 	},
 });
 ```

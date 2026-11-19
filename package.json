@@ -1,6 +1,6 @@
 {
 	"name": "@pitolabs/agent-whatsapp",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "A WhatsApp number as a Mastra agent channel: Baileys linked device, pairing page, one turn per burst of messages, voice notes to text, WhatsApp-flavoured Markdown",
 	"type": "module",
 	"license": "MIT",

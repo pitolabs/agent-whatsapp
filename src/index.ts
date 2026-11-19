@@ -4,7 +4,7 @@ export { type BurstQueue, type BurstQueueOptions, type BurstTiming, createBurstQ
 export { type BurstBatch, type BurstHandlerOptions, type BurstItem, burstHandler, mergeInto } from "./burst-mastra.ts";
 export { type Admit, type HandlerOptions, type WhatsAppHandlerDeps, whatsappHandler } from "./handler.ts";
 export { filesOf } from "./inbox.ts";
-export { asChatAdapter, Link, type LinkState } from "./link.ts";
+export { asChatAdapter, type Closed, heartbeatState, Link, type LinkOptions, type LinkState } from "./link.ts";
 export { isBaileysMessage, isCompanionMessage, markNativeMentions, mentionsBot, senderPhone } from "./mentions.ts";
 export { pairingDigits, pairingPage, pairingRequest, pairingRoutes } from "./pairing.ts";
 export { samePhone, withoutNinthDigit } from "./phone.ts";

@@ -26,8 +26,10 @@ const device = await linkedDevice({ authDir: "/data/whatsapp-auth", userName: "C
 - `authDir` holds the WhatsApp session (created `0700`). Keep it on a persistent volume, never in an image or a
   repository; whoever has it can read and send as the number.
 - `userName` is the name a typed `@Clerk` matches in groups; pass the same to the Chat SDK (`channels.userName`).
-- Pass `device.link.watchingLogger("<prefix>")` as `channels.chatOptions.logger`: the adapter swaps its own logger
-  for the Chat SDK's at initialization, and the link state (for the pairing page) is read from those log lines.
+- Pass `device.link.chatLogger("<line>")` as `channels.chatOptions.logger`: the adapter swaps its own logger for the
+  Chat SDK's at initialization, and the link state (for the pairing page) is read from those log lines. It also logs
+  `[<line>:link] status: <state>` about a minute after start and every ten minutes (`starting`, `waiting_for_scan`,
+  `connected`, `reconnecting`, `closed`, `logged_out`), for log-based monitoring; never a number or a name.
 - Call `device.connect()` after `channels.initialize(mastra)`, and not during a build or tests.
 
 ## 2. Admission

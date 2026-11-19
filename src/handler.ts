@@ -36,6 +36,8 @@ export interface WhatsAppHandlerDeps extends HandlerOptions {
 	stt: SttConfig | { off: string };
 	/** Request-context key that receives the approved proposal's summary (e.g. "clerkApproved"). Omit for agents that never propose. */
 	approvedKey?: string;
+	/** Called at each turn once the pass is granted (e.g. to remember where someone last wrote). A throw is logged, never fails the turn. */
+	onTurn?: (turn: { conversation: string; sender: string }) => void | Promise<void>;
 }
 
 interface Accepted {
@@ -70,6 +72,13 @@ export function whatsappHandler(deps: WhatsAppHandlerDeps): ChannelHandler {
 			for (const it of items) await transcribeVoiceNotes(it.message, deps.stt, deps.log);
 			const rc = last.ctx.requestContext;
 			grantPass(rc, { conversation, sender });
+			if (deps.onTurn) {
+				try {
+					await deps.onTurn({ conversation, sender });
+				} catch (e) {
+					console.warn(`[${deps.log}] onTurn failed (${e instanceof Error ? e.name : "error"})`);
+				}
+			}
 			last.accepted.stamp(rc);
 			if (deps.approvedKey && approved) rc.set(deps.approvedKey, approved);
 			await dispatch();

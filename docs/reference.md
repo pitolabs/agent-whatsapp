@@ -7,7 +7,8 @@ Every export of `@pitolabs/agent-whatsapp` (one entry point, `.`). How to wire t
 |Export|What it does|
 |---|---|
 |`linkedDevice({ authDir, userName, logPrefix })`|Opens the session folder and returns `{ adapter, baileys, link, botIds, connect }`; installs `WhatsAppConverter` and native mention marking; Baileys' own logger is at `error`; never online, never full history.|
-|`Link`|Link state (`starting`, `waiting-for-scan`, `connected`, `logged-out`, the QR), the pairing-by-number attempt, and `watchingLogger(prefix)`.|
+|`Link`|Link state (`starting`, `waiting-for-scan`, `connected`, `logged-out`, the QR), the pairing-by-number attempt, `chatLogger(line)` (the Chat SDK logger plus the `[<line>:link] status: <state>` heartbeat; `new Link({ firstHeartbeatMs, heartbeatMs })` tunes it), `watchingLogger(prefix)`, `dispose()`.|
+|`heartbeatState(status, closed?)`, `Closed`, `LinkOptions`|The heartbeat's state word: a connected link whose socket closed reads `reconnecting` or `closed`.|
 |`asChatAdapter(baileys)`|The Baileys adapter typed as a Chat SDK `Adapter` (its `reply` signature differs; type-only).|
 |`dropProvisionalIdentity(creds)`|Removes what a pairing-code request left in unregistered credentials; true when it changed them.|
 
@@ -15,7 +16,7 @@ Every export of `@pitolabs/agent-whatsapp` (one entry point, `.`). How to wire t
 
 |Export|What it does|
 |---|---|
-|`whatsappHandler({ log, admit, gate, stt, approvedKey?, turns?, batching? })`|The `ChannelHandler` (see the guide's pipeline). `approvedKey` receives the gate's approved summary in the request context.|
+|`whatsappHandler({ log, admit, gate, stt, approvedKey?, onTurn?, turns?, batching? })`|The `ChannelHandler` (see the guide's pipeline). `approvedKey` receives the gate's approved summary in the request context; `onTurn({ conversation, sender })` runs once the pass is granted (a throw is logged, never fails the turn).|
 |`Admit`, `HandlerOptions`, `WhatsAppHandlerDeps`|Its types. `batching: false` runs each message as its own turn (tests).|
 |`burstHandler({ accept, sender, turn?, timing?, turns?, key? })`|The generic Mastra burst handler under `whatsappHandler`.|
 |`mergeInto(target, messages)`|Texts (blank-line separated) and attachments of `messages` into `target`, `formatted` re-parsed.|
